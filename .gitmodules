@@ -1,6 +1,0 @@
-[submodule "lib/CLI11"]
-	path = lib/CLI11
-	url = https://github.com/CLIUtils/CLI11.git
-[submodule "lib/rapidjson"]
-	path = lib/rapidjson
-	url = https://github.com/Tencent/rapidjson.git
