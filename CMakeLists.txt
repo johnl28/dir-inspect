@@ -15,6 +15,5 @@ add_executable(DirInspect
     src/DirInspect.cpp
 )
 
-
-
+# Include directories
 target_include_directories(DirInspect PRIVATE ${CMAKE_SOURCE_DIR}/lib)
