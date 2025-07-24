@@ -1,4 +1,4 @@
-# Dir Inspect
+# Dir Inspect v1.0.0
 **A C++ tool for scanning target directories and summarize their content.**
 
 ![Screenshot with output example](screenshots/output-example.png)
