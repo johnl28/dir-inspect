@@ -12,7 +12,7 @@
 
 int main(int argc, char** argv)
 {
-    CLI::App app{ "Directory Inspector", "dir-inspect" };
+    CLI::App app{ "Directory Inspector", "DirInspect" };
     dirinspect::DirInspectConfig config{};
 
     std::vector<std::string> directories;
@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     app.add_flag("-R, --recursive", config.recursive, "Recursively inspect directories");
     app.add_flag("-S, --summary-only", config.summaryOnly, "Print summary only, no file details");
 
-    app.set_config("-c, --config",
+    app.set_config("-C, --config",
         "config.ini",
         "Read an ini file");
 
