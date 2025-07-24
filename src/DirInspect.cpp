@@ -3,49 +3,79 @@
 #include <iostream>
 #include <filesystem>
 #include <format>
+#include <map>
 
 #include "tabulate/tabulate.hpp"
 
 namespace fs = std::filesystem;
 
 
-void dirinspect::DirInspect::printDirectoryContents(const std::string_view dirPathStr, bool recursive) const
+dirinspect::DirInspect::DirInspect(const dirinspect::DirInspectConfig& config)
+    : m_Config(config) 
+{
+}
+
+void dirinspect::DirInspect::PrintDirectoriesContents(const std::vector<std::string>& directories) const
+{
+    for (const auto& dirPath : directories)
+    {
+        PrintDirectoryContents(dirPath);
+        std::cout << "\n\n\n";
+    }
+}
+
+void dirinspect::DirInspect::PrintDirectoryContents(const std::string_view dirPathStr) const
 {
     const fs::path dirPath{ dirPathStr };
 
     if (!fs::exists(dirPath))
     {
-        std::cout << std::format("Directory {} not found\n", dirPathStr);
+        std::cout << std::format("Directory {} not found", dirPathStr) << std::endl;
         return;
     }
 
     tabulate::Table table;
     table.add_row({ "Directory", "File", "Size" });
 
-    int rows{ 0 };
+    int totalFiles{ 0 };
+    std::map<std::string, int> extensionCount;
     std::uintmax_t totalSize{ 0 };
+
+    auto reqExt = m_Config.extensions;
+
     for (const auto& dir_entry : fs::directory_iterator{ dirPath })
     {
 
         auto path = dir_entry.path();
         if (fs::is_directory(dir_entry.status()))
         {
-            if (recursive)
+            if (m_Config.recursive)
             {
-                printDirectoryContents(path.c_str(), true);
+                PrintDirectoryContents(path.c_str());
             }
             continue;
         }
 
 
-        if (!m_Extensions.empty())
-        {
-            auto ext = path.extension().string();
+        auto ext = path.extension().string();
 
-            if (ext.empty() || std::find(m_Extensions.begin(), m_Extensions.end(), ext) == m_Extensions.end())
+        if (!reqExt.empty())
+        {
+
+            if (ext.empty() || std::find(reqExt.begin(), reqExt.end(), ext) == reqExt.end())
             {
                 continue;
             }
+        }
+
+
+        if (extensionCount.find(ext) == extensionCount.end())
+        {
+            extensionCount[ext] = 1;
+        }
+        else
+        {
+            ++extensionCount[ext];
         }
 
         auto fileSize = fs::file_size(path);
@@ -53,17 +83,27 @@ void dirinspect::DirInspect::printDirectoryContents(const std::string_view dirPa
 
         table.add_row({ path.parent_path().c_str(), path.filename().c_str(), outputVal.GetValue() });
         totalSize += fileSize;
-        ++rows;
+        ++totalFiles;
     }
 
-    if (rows > 0)
+    if (!m_Config.summaryOnly && totalFiles > 0)
     {
         std::cout << table << std::endl;
     }
 
     tabulate::Table summary;
     summary.add_row({ "Summary", dirPath.c_str() });
-    summary.add_row({ "Total Files", std::format("{}", rows) });
+    for (const auto& ext : reqExt)
+    {
+        const auto totalFiles = std::format("Total {} files", ext);
+        const auto totalFilesNumber = std::format("{}", extensionCount[ext]);
+
+        summary.add_row({ totalFiles, totalFilesNumber });
+    }
+
+    summary.add_row({ "Total Files", std::format("{}", totalFiles) });
+
     summary.add_row({ "Total Size", HumanReadable{totalSize}.GetValue() });
     std::cout << summary << std::endl;
+
 }

@@ -13,16 +13,15 @@
 int main(int argc, char** argv)
 {
     CLI::App app{ "Directory Inspector", "dir-inspect" };
+    dirinspect::DirInspectConfig config{};
 
-    std::string dirPathStr;
-    app.add_option("-D, --directory", dirPathStr, "Target directory")->required();
-
-    bool recursive{ false };
-    app.add_flag("-r, --recursive", recursive, "Recursively inspect directories");
-
-    std::vector<std::string> extensions{};
-    app.add_option("--ext", extensions, "File extensions to include (e.g. .txt, .md)")
+    std::vector<std::string> directories;
+    app.add_option("-D, --directories", directories, "Target directories")->required();
+    app.add_option("--ext", config.extensions, "File extensions to include (e.g. .txt .md)")
         ->expected(-1);
+
+    app.add_flag("-R, --recursive", config.recursive, "Recursively inspect directories");
+    app.add_flag("-S, --summary-only", config.summaryOnly, "Print summary only, no file details");
 
     app.set_config("-c, --config",
         "config.ini",
@@ -30,21 +29,8 @@ int main(int argc, char** argv)
 
     CLI11_PARSE(app, argc, argv);
 
-
-    if (dirPathStr.empty()) {
-        std::cerr << "Error: Directory path is required." << std::endl;
-        return 1;
-    }
-
-    std::cout << "Including files with extension: ";
-    for (const auto& ext : extensions) {
-        std::cout << " " << ext;
-    }
-    std::cout << std::endl;
-
-    dirinspect::DirInspect dirInspector{ extensions };
-    dirInspector.printDirectoryContents(dirPathStr, recursive);
-
+    dirinspect::DirInspect dirInspector{ config };
+    dirInspector.PrintDirectoriesContents(directories);
 
     return 0;
 }

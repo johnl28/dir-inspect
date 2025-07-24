@@ -6,6 +6,14 @@
 
 namespace dirinspect {
 
+    struct DirInspectConfig
+    {
+        bool summaryOnly{ false };
+        bool recursive{ false };
+        std::vector<std::string> extensions;
+    };
+
+
     struct HumanReadable
     {
         std::uintmax_t size{};
@@ -26,19 +34,16 @@ namespace dirinspect {
 
     class DirInspect {
     public:
-        DirInspect(const std::vector<std::string>& extensions) : m_Extensions(extensions) {};
+        DirInspect(const DirInspectConfig& config);
         ~DirInspect() = default;
 
-
-        void printDirectoryContents(const std::string_view dirPath, bool recursive) const;
-
+        void PrintDirectoriesContents(const std::vector<std::string>& directories) const;
+        void PrintDirectoryContents(const std::string_view dirPath) const;
 
     private:
-        std::vector<std::string> m_Extensions{};
-
+        DirInspectConfig m_Config;
 
     };
-
 
 
 };
