@@ -24,7 +24,7 @@ void dirinspect::DirInspect::PrintDirectoriesContents(const std::vector<std::str
     }
 }
 
-void dirinspect::DirInspect::PrintDirectoryContents(const std::string_view dirPathStr) const
+void dirinspect::DirInspect::PrintDirectoryContents(std::string_view dirPathStr) const
 {
     const fs::path dirPath{ dirPathStr };
 
@@ -59,13 +59,9 @@ void dirinspect::DirInspect::PrintDirectoryContents(const std::string_view dirPa
 
         auto ext = path.extension().string();
 
-        if (!reqExt.empty())
+        if (!IsExtensionRequired(ext))
         {
-
-            if (ext.empty() || std::find(reqExt.begin(), reqExt.end(), ext) == reqExt.end())
-            {
-                continue;
-            }
+            continue;
         }
 
 
@@ -91,12 +87,20 @@ void dirinspect::DirInspect::PrintDirectoryContents(const std::string_view dirPa
         std::cout << table << std::endl;
     }
 
+    PrintSummary(dirPathStr, totalFiles, totalSize, extensionCount);
+
+}
+
+void dirinspect::DirInspect::PrintSummary(std::string_view dirPath, int totalFiles, uintmax_t totalSize, const std::map<std::string, int>& extensionCount) const
+{
+
     tabulate::Table summary;
-    summary.add_row({ "Summary", dirPath.c_str() });
-    for (const auto& ext : reqExt)
+    summary.add_row({ "Summary", dirPath });
+
+    for (const auto& [ext, count] : extensionCount)
     {
         const auto totalFiles = std::format("Total {} files", ext);
-        const auto totalFilesNumber = std::format("{}", extensionCount[ext]);
+        const auto totalFilesNumber = std::format("{}", count);
 
         summary.add_row({ totalFiles, totalFilesNumber });
     }
@@ -106,4 +110,14 @@ void dirinspect::DirInspect::PrintDirectoryContents(const std::string_view dirPa
     summary.add_row({ "Total Size", HumanReadable{totalSize}.GetValue() });
     std::cout << summary << std::endl;
 
+}
+
+bool dirinspect::DirInspect::IsExtensionRequired(const std::string& ext) const
+{
+    if (m_Config.extensions.empty())
+    {
+        return true; // If no extensions specified, include all files
+    }
+
+    return std::find(m_Config.extensions.begin(), m_Config.extensions.end(), ext) != m_Config.extensions.end();
 }
