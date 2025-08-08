@@ -8,11 +8,13 @@ jobs:
       - uses: seanmiddleditch/gha-setup-ninja@v4
       - name: Configure (MSVC)
         run: >
-          cmake -S . -B build -G Ninja
+          cmake -S . -B build -G "Ninja"
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_CXX_STANDARD=20
           -DCMAKE_CXX_STANDARD_REQUIRED=ON
           -DCMAKE_CXX_EXTENSIONS=OFF
+          -DCMAKE_CXX_COMPILER=cl.exe
+          -DCMAKE_C_COMPILER=cl.exe
           -DCMAKE_CXX_FLAGS="/W4 /WX /permissive- /Zc:__cplusplus /EHsc"
       - name: Build
         run: cmake --build build -j
